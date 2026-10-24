@@ -179,7 +179,7 @@ elements.left.addEventListener("click", () => {
 });
 
 elements.stop.addEventListener("click", () => {
-  sendCommand("DETENER");
+  sendCommand("DETENIDO");
 });
 
 elements.right.addEventListener("click", () => {
