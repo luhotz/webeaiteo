@@ -93,7 +93,6 @@ function renderStatus(data) {
   connected = data.simulated === true || data.deviceOnline === true;
 
   elements.alert.hidden = connected;
-  elements.alert.textContent = connected ? "" : "API disponible, pero el Arduino no está conectado.";
 
   updateControls();
 }
