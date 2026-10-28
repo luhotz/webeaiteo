@@ -66,60 +66,40 @@ function renderStatus(data) {
   currentMode = data.mode;
 
   if (typeof data.distanceCm === "number") {
-  elements.distance.textContent = data.distanceCm.toFixed(1);
-
-  const percentage = Math.min(
-    100,
-    Math.max(0, (data.distanceCm / 60) * 100)
-  );
-
-  elements.distanceBar.style.width = `${percentage}%`;
-  elements.distanceProgress.setAttribute(
-    "aria-valuenow",
-    String(data.distanceCm)
-  );
-} else {
-  elements.distance.textContent = "--";
-  elements.distanceBar.style.width = "0%";
-  elements.distanceProgress.setAttribute("aria-valuenow", "0");
-}
+    elements.distance.textContent = data.distanceCm.toFixed(1);
+    const percentage = Math.min(100, Math.max(0, (data.distanceCm / 60) * 100));
+    elements.distanceBar.style.width = `${percentage}%`;
+    elements.distanceProgress.setAttribute("aria-valuenow", String(data.distanceCm));
+  } else {
+    elements.distance.textContent = "--";
+    elements.distanceBar.style.width = "0%";
+    elements.distanceProgress.setAttribute("aria-valuenow", "0");
+  }
 
   elements.motorState.textContent = data.motorState;
-  elements.modeValue.textContent =
-    data.mode === "MANUAL" ? "MANUAL" : "AUTOMÁTICO";
-
-  elements.connectionType.textContent =
-    data.simulated ? "SIMULACIÓN" : "ARDUINO";
+  elements.modeValue.textContent = data.mode === "MANUAL" ? "MANUAL" : "AUTOMÁTICO";
+  elements.connectionType.textContent = data.simulated ? "SIMULACIÓN" : "ARDUINO";
 
   const isStopped = data.motorState === "DETENIDO";
 
   elements.motorIcon.classList.toggle("stopped", isStopped);
   elements.motorIcon.classList.toggle("running", !isStopped);
 
-  elements.motorIcon.textContent = isStopped
-    ? "■"
-    : data.motorState === "DERECHA" ? "↻" : "↶";
+  elements.motorIcon.textContent = isStopped ? "■" : data.motorState === "DERECHA" ? "↻" : "↶";
+  elements.motorDescription.textContent = isStopped ? "Motor detenido" : `Girando hacia la ${data.motorState.toLowerCase()}`;
 
-  elements.motorDescription.textContent = isStopped
-    ? "Motor detenido"
-    : `Girando hacia la ${data.motorState.toLowerCase()}`;
-
-  elements.lastUpdate.textContent =
-    new Date(data.timestamp || Date.now()).toLocaleTimeString("es-SV");
+  elements.lastUpdate.textContent = new Date(data.timestamp || Date.now()).toLocaleTimeString("es-SV");
 
   connected = data.simulated === true || data.deviceOnline === true;
 
   elements.alert.hidden = connected;
-  elements.alert.textContent = connected
-  ? ""
-  : "API disponible, pero el Arduino no está conectado.";
+  elements.alert.textContent = connected ? "" : "API disponible, pero el Arduino no está conectado.";
 
   updateControls();
 }
 
 async function refreshStatus() {
   if (requestInProgress) return;
-
   requestInProgress = true;
 
   try {
@@ -128,8 +108,7 @@ async function refreshStatus() {
   } catch (error) {
     connected = false;
     elements.alert.hidden = false;
-    elements.alert.textContent =
-      "No se puede conectar con la API. Comprueba que el servidor esté iniciado.";
+    elements.alert.textContent = "No se puede conectar con la API. Comprueba que el servidor esté iniciado.";
     updateControls();
   } finally {
     requestInProgress = false;
@@ -142,7 +121,6 @@ async function changeMode(mode) {
       method: "PUT",
       body: JSON.stringify({ mode })
     });
-
     renderStatus(data);
     setMessage(`Modo cambiado a ${mode === "MANUAL" ? "manual" : "automático"}.`);
   } catch (error) {
@@ -157,7 +135,6 @@ async function sendCommand(command) {
       method: "POST",
       body: JSON.stringify({ command })
     });
-
     renderStatus(data);
     setMessage(`Comando ejecutado: ${command}.`);
   } catch (error) {
@@ -166,28 +143,14 @@ async function sendCommand(command) {
   }
 }
 
-elements.automatic.addEventListener("click", () => {
-  changeMode("AUTOMATICO");
-});
-
-elements.manual.addEventListener("click", () => {
-  changeMode("MANUAL");
-});
-
-elements.left.addEventListener("click", () => {
-  sendCommand("IZQUIERDA");
-});
-
-elements.stop.addEventListener("click", () => {
-  sendCommand("DETENIDO");
-});
-
-elements.right.addEventListener("click", () => {
-  sendCommand("DERECHA");
-});
+elements.automatic.addEventListener("click", () => changeMode("AUTOMATICO"));
+elements.manual.addEventListener("click", () => changeMode("MANUAL"));
+elements.left.addEventListener("click", () => sendCommand("IZQUIERDA"));
+elements.stop.addEventListener("click", () => sendCommand("DETENIDO"));
+elements.right.addEventListener("click", () => sendCommand("DERECHA"));
 
 updateControls();
 refreshStatus();
 
-// Actualiza la interfaz cada 1.5 segundos.
+// Actualiza la interfaz cada 500ms (0.5 segundos)
 setInterval(refreshStatus, 500);
