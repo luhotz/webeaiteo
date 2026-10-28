@@ -190,4 +190,4 @@ updateControls();
 refreshStatus();
 
 // Actualiza la interfaz cada 1.5 segundos.
-setInterval(refreshStatus, 1500);
+setInterval(refreshStatus, 500);
